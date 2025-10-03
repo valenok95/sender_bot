@@ -8,12 +8,11 @@ from datetime import datetime
 
 # Получаем переменные окружения
 API_TOKEN = os.environ.get('API_TOKEN')
-TARGET_CHAT_1 = os.environ.get('TARGET_CHAT_1')
-TARGET_CHAT_2 = os.environ.get('TARGET_CHAT_2')
+TARGET_CHATS = os.environ.get('TARGET_CHATS')
 
 # Проверка наличия необходимых переменных окружения
-if not API_TOKEN:# or not TARGET_CHAT_1 or not TARGET_CHAT_2:
-    raise ValueError("Необходимо установить переменные окружения: API_TOKEN, TARGET_CHAT_1, TARGET_CHAT_2")
+if not API_TOKEN:# or not TARGET_CHATS or not TARGET_CHAT_2:
+    raise ValueError("Необходимо установить переменные окружения: API_TOKEN, TARGET_CHATS")
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +41,7 @@ async def send_welcome(message: types.Message):
 
 @dp.message(F.text)
 async def echo(message: types.Message):
-    admin_status = await is_admin(TARGET_CHAT_1, message.from_user.id)
+    admin_status = await is_admin(TARGET_CHATS, message.from_user.id)
     status = "админ" if admin_status else "не админ"
     
     logger.info(f"{datetime.now()} - Пользователь {message.from_user.username} (ID: {message.from_user.id}) ({status}) отправил сообщение: '{message.text}'")
@@ -50,15 +49,12 @@ async def echo(message: types.Message):
     if admin_status:
         try:
             # Отправляем сообщение в целевые чаты
-            msg1 = await bot.send_message(TARGET_CHAT_1, message.text)
-            msg2 = await bot.send_message(TARGET_CHAT_2, message.text)
-
+            for chat in TARGET_CHATS:
+                msg = await bot.send_message(TARGET_CHATS, message.text)
             # Закрепляем сообщения
-            await bot.pin_chat_message(chat_id=TARGET_CHAT_1, message_id=msg1.message_id)
-            await bot.pin_chat_message(chat_id=TARGET_CHAT_2, message_id=msg2.message_id)
-
+                await bot.pin_chat_message(chat_id=TARGET_CHATS, message_id=msg.message_id)
             # Сохраняем идентификаторы сообщений для редактирования
-            message_ids[message.message_id] = (msg1.message_id, msg2.message_id)
+                message_ids[message.message_id].append(msg.message_id)
 
         except Exception as e:
             logger.error(f"Ошибка при отправке сообщения: {e}")
@@ -67,7 +63,7 @@ async def echo(message: types.Message):
 
 @dp.message(F.text & F.reply)
 async def edit_echo(message: types.Message):
-    admin_status = await is_admin(TARGET_CHAT_1, message.from_user.id)
+    admin_status = await is_admin(TARGET_CHATS, message.from_user.id)
     status = "админ" if admin_status else "не админ"
 
     logger.info(f"{datetime.now()} - Пользователь {message.from_user.username} (ID: {message.from_user.id}) ({status}) редактировал сообщение: '{message.text}'")
@@ -79,7 +75,7 @@ async def edit_echo(message: types.Message):
                 msg_id_1, msg_id_2 = message_ids[message.reply_to_message.message_id]
                 
                 # Редактируем сообщения в целевых чатах
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_1, message_id=msg_id_1)
+                await bot.edit_message_text(message.text, chat_id=TARGET_CHATS, message_id=msg_id_1)
                 await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_2, message_id=msg_id_2)
 
             except Exception as e:
@@ -90,7 +86,7 @@ async def edit_echo(message: types.Message):
 @dp.edited_message(F.text)
 async def handle_edited_message(message: types.Message):
     if message.message_id in message_ids:
-        admin_status = await is_admin(TARGET_CHAT_1, message.from_user.id)
+        admin_status = await is_admin(TARGET_CHATS, message.from_user.id)
         status = "админ" if admin_status else "не админ"
 
         logger.info(f"{datetime.now()} - Пользователь {message.from_user.username} (ID: {message.from_user.id}) ({status}) изменил текст сообщения на: '{message.text}'")
@@ -101,7 +97,7 @@ async def handle_edited_message(message: types.Message):
                 msg_id_1, msg_id_2 = message_ids[message.message_id]
                 
                 # Обновляем текст в целевых чатах
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_1, message_id=msg_id_1)
+                await bot.edit_message_text(message.text, chat_id=TARGET_CHATS, message_id=msg_id_1)
                 await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_2, message_id=msg_id_2)
 
             except Exception as e:
