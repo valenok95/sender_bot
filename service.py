@@ -11,7 +11,7 @@ API_TOKEN = os.environ.get('API_TOKEN')
 TARGET_CHATS = os.environ.get('TARGET_CHATS')
 
 # Проверка наличия необходимых переменных окружения
-if not API_TOKEN or not TARGET_CHATS: 
+if not API_TOKEN or not TARGET_CHATS:
     raise ValueError("Необходимо установить переменные окружения: API_TOKEN, TARGET_CHATS")
 
 # Настройка логирования
@@ -50,11 +50,12 @@ async def echo(message: types.Message):
         try:
             # Отправляем сообщение в целевые чаты
             for chat in TARGET_CHATS:
+                logger('пытаемся отправить новое сообщения в цикле, текущий чат '+str(chat))
                 msg = await bot.send_message(TARGET_CHATS, message.text)
             # Закрепляем сообщения
                 await bot.pin_chat_message(chat_id=TARGET_CHATS, message_id=msg.message_id)
             # Сохраняем идентификаторы сообщений для редактирования
-                message_ids[message.message_id].append(msg.message_id)
+                message_ids[chat].append(msg.message_id)
 
         except Exception as e:
             logger.error(f"Ошибка при отправке сообщения: {e}")
@@ -71,12 +72,13 @@ async def edit_echo(message: types.Message):
     if admin_status:
         if message.reply_to_message and message.reply_to_message.message_id in message_ids:
             try:
-                # Получаем идентификаторы сообщений для редактирования
-                msg_id_1, msg_id_2 = message_ids[message.reply_to_message.message_id]
-                
+                for chat in TARGET_CHATS:
+                logger('пытаемся отредачить сообщения в цикле, текущий чат '+str(chat))
+                logger('как будто бы айдишник сообщения для редактирования '+str(message_ids[chat]))
+                logger('message.text =  '+str(message.text))
                 # Редактируем сообщения в целевых чатах
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHATS, message_id=msg_id_1)
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_2, message_id=msg_id_2)
+                await bot.edit_message_text(message.text, chat_id=chat, message_id=message_ids[chat])
+                logger('закончили редактирование сообщение в чате '+str(chat))
 
             except Exception as e:
                 logger.error(f"Ошибка при редактировании сообщения: {e}")
@@ -92,13 +94,13 @@ async def handle_edited_message(message: types.Message):
         logger.info(f"{datetime.now()} - Пользователь {message.from_user.username} (ID: {message.from_user.id}) ({status}) изменил текст сообщения на: '{message.text}'")
         
         if admin_status:
-            try:
-                # Получаем идентификаторы закрепленных сообщений
-                msg_id_1, msg_id_2 = message_ids[message.message_id]
-                
-                # Обновляем текст в целевых чатах
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHATS, message_id=msg_id_1)
-                await bot.edit_message_text(message.text, chat_id=TARGET_CHAT_2, message_id=msg_id_2)
+            for chat in TARGET_CHATS:
+                logger('пытаемся отредачить сообщения в цикле, текущий чат '+str(chat))
+                logger('как будто бы айдишник сообщения для редактирования '+str(message_ids[chat]))
+                logger('message.text =  '+str(message.text))
+                # Редактируем сообщения в целевых чатах
+                await bot.edit_message_text(message.text, chat_id=chat, message_id=message_ids[chat])
+                logger('закончили редактирование сообщение в чате '+str(chat))
 
             except Exception as e:
                 logger.error(f"Ошибка при редактировании сообщения: {e}")
