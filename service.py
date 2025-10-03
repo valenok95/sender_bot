@@ -11,7 +11,7 @@ API_TOKEN = os.environ.get('API_TOKEN')
 TARGET_CHATS = os.environ.get('TARGET_CHATS')
 
 # Проверка наличия необходимых переменных окружения
-if not API_TOKEN:# or not TARGET_CHATS or not TARGET_CHAT_2:
+if not API_TOKEN or not TARGET_CHATS: 
     raise ValueError("Необходимо установить переменные окружения: API_TOKEN, TARGET_CHATS")
 
 # Настройка логирования
