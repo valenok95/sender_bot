@@ -73,12 +73,12 @@ async def edit_echo(message: types.Message):
         if message.reply_to_message and message.reply_to_message.message_id in message_ids:
             try:
                 for chat in TARGET_CHATS:
-                logger('пытаемся отредачить сообщения в цикле, текущий чат '+str(chat))
-                logger('как будто бы айдишник сообщения для редактирования '+str(message_ids[chat]))
-                logger('message.text =  '+str(message.text))
+                    logger('пытаемся отредачить сообщения в цикле, текущий чат '+str(chat))
+                    logger('как будто бы айдишник сообщения для редактирования '+str(message_ids[chat]))
+                    logger('message.text =  '+str(message.text))
                 # Редактируем сообщения в целевых чатах
-                await bot.edit_message_text(message.text, chat_id=chat, message_id=message_ids[chat])
-                logger('закончили редактирование сообщение в чате '+str(chat))
+                    await bot.edit_message_text(message.text, chat_id=chat, message_id=message_ids[chat])
+                    logger('закончили редактирование сообщение в чате '+str(chat))
 
             except Exception as e:
                 logger.error(f"Ошибка при редактировании сообщения: {e}")
