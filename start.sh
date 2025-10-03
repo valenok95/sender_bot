@@ -4,7 +4,7 @@
 # cd /path/to/your/python/script
 
 # Execute the Python script
-python3 service.py
+python service.py
 
 # Or, if you have a specific Python interpreter you want to use:
 # /usr/bin/python3 your_script_name.py
