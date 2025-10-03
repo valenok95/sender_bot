@@ -102,7 +102,7 @@ async def handle_edited_message(message: types.Message):
                 await bot.edit_message_text(message.text, chat_id=chat, message_id=message_ids[chat])
                 logger('закончили редактирование сообщение в чате '+str(chat))
 
-            except Exception as e:
+        except Exception as e:
                 logger.error(f"Ошибка при редактировании сообщения: {e}")
 
 async def main():
