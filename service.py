@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Получаем переменные окружения
 API_TOKEN = os.environ.get('API_TOKEN')
-ADMINS = os.environ.get('ADMINS')
+ADMINS = os.environ.get('ADMINS').lower().split(',')
 TARGET_CHATS = os.environ.get('TARGET_CHATS').split(',')
 
 # Проверка наличия необходимых переменных окружения
